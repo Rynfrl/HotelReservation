@@ -1,0 +1,26 @@
+stateDiagram-v2
+    [*] --> InputDataTamu
+    
+    InputDataTamu : 1. Kasir Mendaftarkan Tamu Baru
+    InputDataTamu --> PilihKamar
+    
+    PilihKamar : 2. Kasir Memilih Kamar Tersedia & Tgl Menginap
+    PilihKamar --> SimpanReservasi
+    
+    SimpanReservasi : 3. Sistem Menyimpan Data Reservasi
+    
+    state is_checkin <<choice>>
+    SimpanReservasi --> is_checkin : Waktu Check-In?
+    
+    is_checkin --> ProsesCheckIn : Sudah Tiba
+    is_checkin --> Menunggu : Belum
+    Menunggu --> is_checkin
+    
+    ProsesCheckIn : 4. Kasir Mengeksekusi Check-In
+    ProsesCheckIn --> ProsesCheckOut : Tamu Selesai Menginap
+    
+    ProsesCheckOut : 5. Kasir Melakukan Check-Out
+    ProsesCheckOut --> Pembayaran
+    
+    Pembayaran : 6. Kasir Menghitung & Menerima Pembayaran
+    Pembayaran --> [*]

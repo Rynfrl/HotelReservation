@@ -1,0 +1,32 @@
+flowchart LR
+    %% Actors
+    Admin([👤 Admin])
+    Kasir([👤 Kasir])
+
+    %% System Boundary
+    subgraph Sistem Reservasi Hotel
+        direction TB
+        UC1((Manajemen Kamar))
+        UC2((Manajemen User))
+        UC3((Melihat Laporan))
+        UC4((Lihat Histori Pembayaran))
+
+        UC5((Kelola Data Tamu))
+        UC6((Reservasi Kamar))
+        UC7((Proses Check-In))
+        UC8((Proses Check-Out))
+        UC9((Proses Pembayaran))
+    end
+
+    %% Admin Relationships
+    Admin --> UC1
+    Admin --> UC2
+    Admin --> UC3
+    Admin --> UC4
+
+    %% Kasir Relationships
+    Kasir --> UC5
+    Kasir --> UC6
+    Kasir --> UC7
+    Kasir --> UC8
+    Kasir --> UC9

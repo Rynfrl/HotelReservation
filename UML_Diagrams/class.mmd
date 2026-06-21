@@ -1,0 +1,79 @@
+classDiagram
+    %% Model Layer
+    class User {
+        +int idUser
+        +String username
+        +String password
+        +String role
+    }
+    class Kamar {
+        +int idKamar
+        +String nomorKamar
+        +String tipeKamar
+        +double harga
+        +String status
+    }
+    class Tamu {
+        +int idTamu
+        +String nama
+        +String noHp
+        +String alamat
+    }
+    class Reservasi {
+        +int idReservasi
+        +int idTamu
+        +int idKamar
+        +LocalDate tanggalCheckin
+        +LocalDate tanggalCheckout
+        +String status
+    }
+    class Pembayaran {
+        +int idPembayaran
+        +int idReservasi
+        +int lamaMenginap
+        +double totalBayar
+        +LocalDateTime tanggalBayar
+    }
+
+    Reservasi "*" --> "1" Tamu : dimiliki
+    Reservasi "*" --> "1" Kamar : memesan
+    Pembayaran "1" --> "1" Reservasi : membayar
+
+    %% DAO Layer
+    class UserDAO {
+        +findByUsername(String) User
+        +findAll() List~User~
+    }
+    class KamarDAO {
+        +findById(int) Kamar
+        +findAll() List~Kamar~
+        +findAvailable() List~Kamar~
+        +update(Kamar) boolean
+    }
+    class ReservasiDAO {
+        +findById(int) Reservasi
+        +findAll() List~Reservasi~
+        +updateStatus(int, String) boolean
+    }
+
+    UserDAO ..> User
+    KamarDAO ..> Kamar
+    ReservasiDAO ..> Reservasi
+
+    %% Service Layer
+    class LoginService {
+        +authenticate(username, password) User
+    }
+    class ReservasiService {
+        +createReservasi(Reservasi) boolean
+        +checkIn(int id) boolean
+        +checkOut(int id) boolean
+    }
+    class PembayaranService {
+        +calculateTotal(int id) double
+        +pay(int id) boolean
+    }
+
+    LoginService --> UserDAO
+    ReservasiService --> ReservasiDAO
+    ReservasiService --> KamarDAO

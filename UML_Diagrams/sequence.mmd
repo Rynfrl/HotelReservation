@@ -1,0 +1,33 @@
+sequenceDiagram
+    actor Kasir
+    participant FormCheckIn
+    participant ReservasiService
+    participant ReservasiDAO
+    participant KamarDAO
+    participant Database
+
+    Kasir->>FormCheckIn: Pilih baris reservasi & Klik "Check-In"
+    FormCheckIn->>ReservasiService: checkIn(idReservasi)
+    
+    ReservasiService->>ReservasiDAO: findById(idReservasi)
+    ReservasiDAO-->>ReservasiService: Object Reservasi
+    
+    alt Status Reservasi = "DIPESAN"
+        ReservasiService->>ReservasiDAO: updateStatus(idReservasi, "CHECK_IN")
+        ReservasiDAO->>Database: UPDATE reservasi SET status='CHECK_IN'
+        Database-->>ReservasiDAO: (Berhasil)
+        
+        ReservasiService->>KamarDAO: findById(idKamar)
+        KamarDAO-->>ReservasiService: Object Kamar
+        
+        ReservasiService->>Kamar: setStatus("TERISI")
+        ReservasiService->>KamarDAO: update(Kamar)
+        KamarDAO->>Database: UPDATE kamar SET status='TERISI'
+        Database-->>KamarDAO: (Berhasil)
+        
+        ReservasiService-->>FormCheckIn: return true
+        FormCheckIn-->>Kasir: Notifikasi "Check-In Berhasil!"
+    else Reservasi tidak valid / Sudah Check-In
+        ReservasiService-->>FormCheckIn: return false
+        FormCheckIn-->>Kasir: Error "Gagal Check-In"
+    end
