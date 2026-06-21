@@ -17,57 +17,76 @@ public class LoginForm extends JFrame {
 
     public LoginForm() {
         setTitle("Hotel Reservation - Login");
-        setSize(420, 260);
+        setSize(800, 500); // Larger split-screen design
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setResizable(false);
         initUI();
     }
 
     private void initUI() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        JPanel mainPanel = new JPanel(new GridLayout(1, 2));
 
-        JLabel header = new JLabel("Hotel Reservation System", SwingConstants.CENTER);
-        header.setOpaque(true);
-        header.setBackground(new Color(10, 60, 120));
-        header.setForeground(Color.WHITE);
-        header.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        header.setPreferredSize(new Dimension(0,60));
-        panel.add(header, BorderLayout.NORTH);
+        // Left Panel (Image / Branding area)
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.setBackground(Color.decode("#1E3A8A")); // Deep Blue
+        JLabel lblBranding = new JLabel("<html><div style='text-align: center; color: white;'>"
+                + "<h2>Sistem Reservasi Hotel</h2>"
+                + "<p>Manajemen Cepat, Tepat, dan Nyaman</p></div></html>", SwingConstants.CENTER);
+        leftPanel.add(lblBranding, BorderLayout.CENTER);
 
-        JPanel form = new JPanel(null);
-        form.setBackground(Color.WHITE);
+        // Right Panel (Form area)
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.setBackground(Color.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 20, 10, 20);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel lblUser = new JLabel("Username:");
-        lblUser.setBounds(40,20,80,25);
-        form.add(lblUser);
+        JLabel lblTitle = new JLabel("Selamat Datang");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitle.setForeground(Color.decode("#1F2937"));
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        rightPanel.add(lblTitle, gbc);
 
-        txtUsername = new JTextField();
-        txtUsername.setBounds(130,20,220,25);
-        form.add(txtUsername);
+        JLabel lblSubtitle = new JLabel("Silakan masuk ke akun Anda");
+        lblSubtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblSubtitle.setForeground(Color.GRAY);
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 20, 30, 20);
+        rightPanel.add(lblSubtitle, gbc);
 
-        JLabel lblPass = new JLabel("Password:");
-        lblPass.setBounds(40,60,80,25);
-        form.add(lblPass);
+        gbc.insets = new Insets(5, 20, 5, 20);
+        gbc.gridwidth = 1;
+        
+        txtUsername = new JTextField(20);
+        txtUsername.putClientProperty("JTextField.placeholderText", "Username");
+        txtUsername.putClientProperty("JComponent.roundRect", true);
+        gbc.gridy = 2;
+        rightPanel.add(txtUsername, gbc);
 
-        txtPassword = new JPasswordField();
-        txtPassword.setBounds(130,60,220,25);
-        form.add(txtPassword);
+        txtPassword = new JPasswordField(20);
+        txtPassword.putClientProperty("JTextField.placeholderText", "Password");
+        txtPassword.putClientProperty("JTextField.showRevealButton", true);
+        txtPassword.putClientProperty("JComponent.roundRect", true);
+        gbc.gridy = 3;
+        rightPanel.add(txtPassword, gbc);
 
-        JButton btnLogin = new JButton("Login");
-        btnLogin.setBounds(130,110,100,30);
-        btnLogin.setBackground(new Color(10, 90, 160));
+        JButton btnLogin = new JButton("<html><font color='white'>Login</font></html>");
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLogin.putClientProperty("JButton.buttonType", "roundRect");
+        btnLogin.setBackground(Color.decode("#1E3A8A"));
         btnLogin.setForeground(Color.WHITE);
         btnLogin.addActionListener((ActionEvent e) -> doLogin());
-        form.add(btnLogin);
+        this.getRootPane().setDefaultButton(btnLogin); // Make Enter key work
+        
+        gbc.gridy = 4;
+        gbc.insets = new Insets(20, 20, 10, 20);
+        rightPanel.add(btnLogin, gbc);
 
-        JButton btnExit = new JButton("Exit");
-        btnExit.setBounds(250,110,100,30);
-        btnExit.addActionListener(e -> System.exit(0));
-        form.add(btnExit);
-
-        panel.add(form, BorderLayout.CENTER);
-        add(panel);
+        mainPanel.add(leftPanel);
+        mainPanel.add(rightPanel);
+        add(mainPanel);
     }
 
     private void doLogin() {

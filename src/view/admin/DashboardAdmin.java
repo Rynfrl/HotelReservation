@@ -7,6 +7,7 @@ import utils.Session;
 import model.User;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -15,11 +16,11 @@ public class DashboardAdmin extends JFrame {
     private ReservasiDAO reservasiDAO = new ReservasiDAO();
     private PembayaranService pembayaranService = new PembayaranService();
 
-    private JLabel lblTotalKamar = new JLabel();
-    private JLabel lblKamarTersedia = new JLabel();
-    private JLabel lblKamarTerisi = new JLabel();
-    private JLabel lblTotalReservasi = new JLabel();
-    private JLabel lblTotalPendapatan = new JLabel();
+    private JLabel lblTotalKamar = new JLabel("0");
+    private JLabel lblKamarTersedia = new JLabel("0");
+    private JLabel lblKamarTerisi = new JLabel("0");
+    private JLabel lblTotalReservasi = new JLabel("0");
+    private JLabel lblTotalPendapatan = new JLabel("Rp 0");
 
     public DashboardAdmin() {
         setTitle("Dashboard Admin - Hotel Reservation");
@@ -32,83 +33,101 @@ public class DashboardAdmin extends JFrame {
 
     private void initUI() {
         setLayout(new BorderLayout());
+
+        // Sidebar
         JPanel sidebar = new JPanel();
-        sidebar.setBackground(new Color(10, 60, 120));
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(Color.decode("#1E3A8A")); // Deep Blue
         sidebar.setPreferredSize(new Dimension(220, 0));
-        sidebar.setLayout(null);
+        sidebar.setBorder(new EmptyBorder(20, 10, 20, 10));
 
-        JLabel title = new JLabel("ADMIN", SwingConstants.CENTER);
+        JLabel title = new JLabel("<html><div style='text-align: center;'>Admin<br>Dashboard</div></html>", SwingConstants.CENTER);
         title.setForeground(Color.WHITE);
-        title.setBounds(10,10,200,40);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
         sidebar.add(title);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        JButton btnKamar = new JButton("Data Kamar");
-        btnKamar.setBounds(10,80,200,40);
-        btnKamar.addActionListener((ActionEvent e) -> openFormKamar());
-        sidebar.add(btnKamar);
-
-        JButton btnUser = new JButton("Data User");
-        btnUser.setBounds(10,130,200,40);
-        btnUser.addActionListener((ActionEvent e) -> openFormUser());
-        sidebar.add(btnUser);
-
-        JButton btnReservasi = new JButton("Data Reservasi");
-        btnReservasi.setBounds(10,180,200,40);
-        btnReservasi.addActionListener(e -> openFormLaporan());
-        sidebar.add(btnReservasi);
-
-        JButton btnPembayaran = new JButton("Data Pembayaran");
-        btnPembayaran.setBounds(10,230,200,40);
-        btnPembayaran.addActionListener(e -> openFormPembayaranAdmin());
-        sidebar.add(btnPembayaran);
-
-        JButton btnLaporan = new JButton("Laporan");
-        btnLaporan.setBounds(10,280,200,40);
-        btnLaporan.addActionListener(e -> openFormLaporan());
-        sidebar.add(btnLaporan);
-
-        JButton btnLogout = new JButton("Logout");
-        btnLogout.setBounds(10,330,200,40);
-        btnLogout.addActionListener(e -> logout());
+        sidebar.add(createNavButton("Data Kamar", e -> openFormKamar()));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebar.add(createNavButton("Data User", e -> openFormUser()));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebar.add(createNavButton("Data Reservasi", e -> openFormLaporan()));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebar.add(createNavButton("Data Pembayaran", e -> openFormPembayaranAdmin()));
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+        sidebar.add(createNavButton("Laporan", e -> openFormLaporan()));
+        
+        sidebar.add(Box.createVerticalGlue());
+        
+        JButton btnLogout = createNavButton("Logout", e -> logout());
+        btnLogout.setBackground(Color.decode("#E11D48")); // Rose Red
         sidebar.add(btnLogout);
 
         add(sidebar, BorderLayout.WEST);
 
+        // Header
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(Color.WHITE);
-        header.setPreferredSize(new Dimension(0,80));
-        JLabel lblWelcome = new JLabel("Selamat datang, " + getUserDisplay(), SwingConstants.LEFT);
-        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblWelcome.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        header.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel lblWelcome = new JLabel("Selamat datang, " + getUserDisplay());
+        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 18));
         header.add(lblWelcome, BorderLayout.WEST);
+        
+        // Header separator line
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.decode("#E5E7EB")));
         add(header, BorderLayout.NORTH);
 
-        JPanel content = new JPanel();
-        content.setBackground(Color.WHITE);
-        content.setLayout(null);
+        // Content Area
+        JPanel content = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        content.setBackground(Color.decode("#F9FAFB")); // Light Gray background
 
-        JLabel statTitle = new JLabel("Statistik");
-        statTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        statTitle.setBounds(20,10,200,30);
-        content.add(statTitle);
-
-        lblTotalKamar.setBounds(20,50,300,30);
-        content.add(lblTotalKamar);
-
-        lblKamarTersedia.setBounds(20,90,300,30);
-        content.add(lblKamarTersedia);
-
-        lblKamarTerisi.setBounds(20,130,300,30);
-        content.add(lblKamarTerisi);
-
-        lblTotalReservasi.setBounds(20,170,300,30);
-        content.add(lblTotalReservasi);
-
-        lblTotalPendapatan.setBounds(20,210,400,30);
-        content.add(lblTotalPendapatan);
+        content.add(createStatCard("Total Pendapatan", lblTotalPendapatan, "#10B981")); // Emerald Green
+        content.add(createStatCard("Total Kamar", lblTotalKamar, "#3B82F6")); // Blue
+        content.add(createStatCard("Kamar Tersedia", lblKamarTersedia, "#F59E0B")); // Amber
+        content.add(createStatCard("Kamar Terisi", lblKamarTerisi, "#EF4444")); // Red
+        content.add(createStatCard("Total Reservasi", lblTotalReservasi, "#8B5CF6")); // Purple
 
         add(content, BorderLayout.CENTER);
+    }
+
+    private JButton createNavButton(String text, java.awt.event.ActionListener action) {
+        JButton btn = new JButton(text);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(200, 40));
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(Color.decode("#2563EB")); // Slightly lighter blue for buttons
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.putClientProperty("JButton.buttonType", "roundRect");
+        btn.addActionListener(action);
+        return btn;
+    }
+
+    private JPanel createStatCard(String title, JLabel valueLabel, String colorHex) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setPreferredSize(new Dimension(220, 120));
+        card.setBackground(Color.WHITE);
+        card.putClientProperty("FlatLaf.style", "arc: 15");
+        
+        // FlatLaf dropshadow trick using border or just matte border top
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(4, 0, 0, 0, Color.decode(colorHex)),
+            new EmptyBorder(15, 15, 15, 15)
+        ));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblTitle.setForeground(Color.GRAY);
+        card.add(lblTitle, BorderLayout.NORTH);
+
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        valueLabel.setForeground(Color.decode("#1F2937"));
+        card.add(valueLabel, BorderLayout.CENTER);
+
+        return card;
     }
 
     private String getUserDisplay() {
@@ -123,16 +142,17 @@ public class DashboardAdmin extends JFrame {
         int totalReservasi = reservasiDAO.countAll();
         double pendapatan = pembayaranService.totalPendapatan();
 
-        lblTotalKamar.setText("Total kamar: " + total);
-        lblKamarTersedia.setText("Kamar tersedia: " + tersedia);
-        lblKamarTerisi.setText("Kamar terisi: " + terisi);
-        lblTotalReservasi.setText("Total reservasi: " + totalReservasi);
-        lblTotalPendapatan.setText("Total pendapatan: Rp " + String.format("%,.2f", pendapatan));
+        lblTotalKamar.setText(String.valueOf(total));
+        lblKamarTersedia.setText(String.valueOf(tersedia));
+        lblKamarTerisi.setText(String.valueOf(terisi));
+        lblTotalReservasi.setText(String.valueOf(totalReservasi));
+        lblTotalPendapatan.setText("Rp " + String.format("%,.0f", pendapatan));
     }
 
     private void openFormKamar() {
         FormKamar fk = new FormKamar(this);
         fk.setVisible(true);
+        loadStats(); // Reload stats when child form closes
     }
 
     private void openFormUser() {
@@ -143,11 +163,13 @@ public class DashboardAdmin extends JFrame {
     private void openFormLaporan() {
         FormLaporan fl = new FormLaporan(this);
         fl.setVisible(true);
+        loadStats();
     }
 
     private void openFormPembayaranAdmin() {
         FormPembayaranAdmin fp = new FormPembayaranAdmin(this);
         fp.setVisible(true);
+        loadStats();
     }
 
     private void logout() {

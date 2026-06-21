@@ -10,6 +10,7 @@ import service.ReservasiService;
 import utils.DateHelper;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
@@ -30,8 +31,8 @@ public class FormReservasi extends JDialog {
     private JTextField txtCheckout;
 
     public FormReservasi(JFrame parent) {
-        super(parent, "Reservasi", true);
-        setSize(900, 550);
+        super(parent, "Reservasi Baru", true);
+        setSize(900, 600);
         setLocationRelativeTo(parent);
         initUI();
         loadData();
@@ -39,53 +40,99 @@ public class FormReservasi extends JDialog {
     }
 
     private void initUI() {
-        setLayout(new BorderLayout());
-        JPanel top = new JPanel(new GridLayout(2,1));
-        JPanel form = new JPanel(null);
-        form.setPreferredSize(new Dimension(0,120));
+        setLayout(new BorderLayout(10, 10));
+        ((JPanel)getContentPane()).setBorder(new EmptyBorder(15, 15, 15, 15));
+        getContentPane().setBackground(Color.decode("#F9FAFB"));
 
-        JLabel lblTamu = new JLabel("Pilih Tamu:");
-        lblTamu.setBounds(10,10,100,25);
-        form.add(lblTamu);
-        cbTamu = new JComboBox<>();
-        cbTamu.setBounds(120,10,250,25);
-        form.add(cbTamu);
+        // Left Panel (Table)
+        JPanel leftPanel = new JPanel(new BorderLayout(0, 10));
+        leftPanel.setBackground(Color.decode("#F9FAFB"));
+        
+        JLabel lblTitle = new JLabel("Daftar Reservasi");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        leftPanel.add(lblTitle, BorderLayout.NORTH);
 
-        JLabel lblKamar = new JLabel("Pilih Kamar:");
-        lblKamar.setBounds(400,10,100,25);
-        form.add(lblKamar);
-        cbKamar = new JComboBox<>();
-        cbKamar.setBounds(510,10,200,25);
-        form.add(cbKamar);
-
-        JLabel lblCheckin = new JLabel("Check-in (yyyy-MM-dd):");
-        lblCheckin.setBounds(10,50,150,25);
-        form.add(lblCheckin);
-        txtCheckin = new JTextField();
-        txtCheckin.setBounds(170,50,150,25);
-        form.add(txtCheckin);
-
-        JLabel lblCheckout = new JLabel("Check-out (yyyy-MM-dd):");
-        lblCheckout.setBounds(350,50,150,25);
-        form.add(lblCheckout);
-        txtCheckout = new JTextField();
-        txtCheckout.setBounds(510,50,150,25);
-        form.add(txtCheckout);
-
-        JButton btnReserve = new JButton("Buat Reservasi");
-        btnReserve.setBounds(700,10,150,30);
-        btnReserve.addActionListener(e -> createReservasi());
-        form.add(btnReserve);
-
-        top.add(form);
-
-        add(top, BorderLayout.NORTH);
-
-        modelReservasi = new DefaultTableModel(new Object[]{"ID","Tamu","Kamar","Checkin","Checkout","Status"},0) {
+        modelReservasi = new DefaultTableModel(new Object[]{"ID", "Tamu", "Kamar", "Check-in", "Check-out", "Status"}, 0) {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tableReservasi = new JTable(modelReservasi);
-        add(new JScrollPane(tableReservasi), BorderLayout.CENTER);
+        tableReservasi.setRowHeight(30);
+        tableReservasi.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tableReservasi.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tableReservasi.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        JScrollPane scrollPane = new JScrollPane(tableReservasi);
+        leftPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        add(leftPanel, BorderLayout.CENTER);
+
+        // Right Panel (Form area)
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.setPreferredSize(new Dimension(320, 0));
+        rightPanel.setBackground(Color.WHITE);
+        rightPanel.putClientProperty("FlatLaf.style", "arc: 15");
+        rightPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 0, 5, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 1.0;
+
+        JLabel formTitle = new JLabel("Buat Reservasi Baru");
+        formTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        rightPanel.add(formTitle, gbc);
+
+        gbc.gridy++;
+        rightPanel.add(new JLabel("Pilih Tamu:"), gbc);
+        gbc.gridy++;
+        cbTamu = new JComboBox<>();
+        rightPanel.add(cbTamu, gbc);
+
+        gbc.gridy++;
+        rightPanel.add(new JLabel("Pilih Kamar (Tersedia):"), gbc);
+        gbc.gridy++;
+        cbKamar = new JComboBox<>();
+        rightPanel.add(cbKamar, gbc);
+
+        gbc.gridy++;
+        rightPanel.add(new JLabel("Check-in (yyyy-MM-dd):"), gbc);
+        gbc.gridy++;
+        txtCheckin = new JTextField();
+        txtCheckin.setText(LocalDate.now().toString()); // Auto-fill today
+        txtCheckin.putClientProperty("JComponent.roundRect", true);
+        rightPanel.add(txtCheckin, gbc);
+
+        gbc.gridy++;
+        rightPanel.add(new JLabel("Check-out (yyyy-MM-dd):"), gbc);
+        gbc.gridy++;
+        txtCheckout = new JTextField();
+        txtCheckout.setText(LocalDate.now().plusDays(1).toString()); // Auto-fill tomorrow
+        txtCheckout.putClientProperty("JComponent.roundRect", true);
+        rightPanel.add(txtCheckout, gbc);
+
+        // Buttons
+        gbc.gridy++;
+        gbc.insets = new Insets(20, 0, 5, 0);
+        JButton btnReserve = new JButton("Simpan Reservasi");
+        btnReserve.setBackground(Color.decode("#1E3A8A"));
+        btnReserve.setForeground(Color.WHITE);
+        btnReserve.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnReserve.addActionListener(e -> createReservasi());
+        rightPanel.add(btnReserve, gbc);
+
+        gbc.gridy++;
+        gbc.insets = new Insets(5, 0, 5, 0);
+        JButton btnRefresh = new JButton("Refresh Data Kamar");
+        btnRefresh.addActionListener(e -> loadData());
+        rightPanel.add(btnRefresh, gbc);
+
+        // Spacer to push everything to top
+        gbc.gridy++;
+        gbc.weighty = 1.0;
+        rightPanel.add(Box.createVerticalGlue(), gbc);
+
+        add(rightPanel, BorderLayout.EAST);
     }
 
     private void loadData() {

@@ -2,15 +2,18 @@ package view.kasir;
 
 import dao.ReservasiDAO;
 import dao.KamarDAO;
-import dao.TamuDAO;
 import model.Reservasi;
 import model.Kamar;
-import model.Tamu;
 import service.PembayaranService;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.List;
 
 public class FormPembayaran extends JDialog {
@@ -19,41 +22,155 @@ public class FormPembayaran extends JDialog {
     private JTable table;
     private DefaultTableModel model;
 
+    private JLabel lblTotalBayar;
+    private JTextField txtDibayar;
+    private JLabel lblKembalian;
+    private JButton btnPay;
+    
+    private double currentTotal = 0;
+    private int currentReservasiId = -1;
+
     public FormPembayaran(JFrame parent) {
-        super(parent, "Pembayaran", true);
-        setSize(900, 500);
+        super(parent, "Proses Pembayaran", true);
+        setSize(1000, 600);
         setLocationRelativeTo(parent);
         initUI();
         loadTable();
     }
 
     private void initUI() {
-        setLayout(new BorderLayout());
-        model = new DefaultTableModel(new Object[]{"ID","Tamu","Nomor Kamar","Harga","Checkin","Checkout","Status"},0) {
+        setLayout(new BorderLayout(10, 10));
+        ((JPanel)getContentPane()).setBorder(new EmptyBorder(15, 15, 15, 15));
+        getContentPane().setBackground(Color.decode("#F9FAFB"));
+
+        // Left Panel (Table)
+        JPanel leftPanel = new JPanel(new BorderLayout(0, 10));
+        leftPanel.setBackground(Color.decode("#F9FAFB"));
+        
+        JLabel lblTitle = new JLabel("Daftar Tagihan Reservasi");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        leftPanel.add(lblTitle, BorderLayout.NORTH);
+
+        model = new DefaultTableModel(new Object[]{"ID", "ID Tamu", "Kamar", "Harga/Malam", "Check-in", "Check-out", "Status"}, 0) {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         table = new JTable(model);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        table.setRowHeight(35);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                selectReservasi();
+            }
+        });
 
-        JPanel bottom = new JPanel();
-        JButton btnCalculate = new JButton("Hitung Total");
-        btnCalculate.addActionListener(e -> calculate());
-        JButton btnPay = new JButton("Bayar");
-        btnPay.addActionListener(e -> pay());
+        JScrollPane scrollPane = new JScrollPane(table);
+        leftPanel.add(scrollPane, BorderLayout.CENTER);
+        
         JButton btnRefresh = new JButton("Refresh");
         btnRefresh.addActionListener(e -> loadTable());
-        bottom.add(btnCalculate);
-        bottom.add(btnPay);
-        bottom.add(btnRefresh);
-        add(bottom, BorderLayout.SOUTH);
+        leftPanel.add(btnRefresh, BorderLayout.SOUTH);
+        
+        add(leftPanel, BorderLayout.CENTER);
+
+        // Right Panel (Payment area)
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.setPreferredSize(new Dimension(350, 0));
+        rightPanel.setBackground(Color.WHITE);
+        rightPanel.putClientProperty("FlatLaf.style", "arc: 15");
+        rightPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 0, 5, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 1.0;
+
+        JLabel formTitle = new JLabel("Rincian Pembayaran");
+        formTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        rightPanel.add(formTitle, gbc);
+
+        gbc.gridy++;
+        rightPanel.add(new JSeparator(), gbc);
+
+        gbc.gridy++;
+        gbc.insets = new Insets(15, 0, 5, 0);
+        rightPanel.add(new JLabel("Total Tagihan:"), gbc);
+        
+        gbc.gridy++;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        lblTotalBayar = new JLabel("Rp 0");
+        lblTotalBayar.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        lblTotalBayar.setForeground(Color.decode("#EF4444")); // Red for bill
+        rightPanel.add(lblTotalBayar, gbc);
+
+        gbc.gridy++;
+        gbc.insets = new Insets(10, 0, 5, 0);
+        rightPanel.add(new JLabel("Jumlah Dibayar:"), gbc);
+        
+        gbc.gridy++;
+        txtDibayar = new JTextField();
+        txtDibayar.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        txtDibayar.putClientProperty("JComponent.roundRect", true);
+        txtDibayar.setHorizontalAlignment(JTextField.RIGHT);
+        
+        // Auto-calculate logic
+        txtDibayar.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { calculateKembalian(); }
+            public void removeUpdate(DocumentEvent e) { calculateKembalian(); }
+            public void changedUpdate(DocumentEvent e) { calculateKembalian(); }
+        });
+        
+        // Listen for Enter to trigger Pay
+        txtDibayar.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    pay();
+                }
+            }
+        });
+        rightPanel.add(txtDibayar, gbc);
+
+        gbc.gridy++;
+        rightPanel.add(new JLabel("Kembalian:"), gbc);
+        
+        gbc.gridy++;
+        lblKembalian = new JLabel("Rp 0");
+        lblKembalian.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblKembalian.setForeground(Color.decode("#10B981")); // Emerald Green
+        rightPanel.add(lblKembalian, gbc);
+
+        gbc.gridy++;
+        gbc.insets = new Insets(30, 0, 5, 0);
+        btnPay = new JButton("Bayar & Cetak Struk");
+        btnPay.setBackground(Color.decode("#1E3A8A"));
+        btnPay.setForeground(Color.WHITE);
+        btnPay.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnPay.setPreferredSize(new Dimension(0, 50));
+        btnPay.addActionListener(e -> pay());
+        btnPay.setEnabled(false); // Disabled initially
+        rightPanel.add(btnPay, gbc);
+
+        // Spacer
+        gbc.gridy++;
+        gbc.weighty = 1.0;
+        rightPanel.add(Box.createVerticalGlue(), gbc);
+
+        add(rightPanel, BorderLayout.EAST);
     }
 
     private void loadTable() {
         model.setRowCount(0);
         List<Reservasi> list = reservasiDAO.findAll();
         for (Reservasi r : list) {
-            model.addRow(new Object[]{r.getIdReservasi(), r.getIdTamu(), r.getIdKamar(), getHarga(r.getIdKamar()), r.getTanggalCheckin(), r.getTanggalCheckout(), r.getStatus()});
+            // Usually we pay when checking out or before check-in. 
+            // In this logic, allow any, but typically it's CHECK_IN or DIPESAN
+            model.addRow(new Object[]{r.getIdReservasi(), r.getIdTamu(), r.getIdKamar(), "Rp " + getHarga(r.getIdKamar()), r.getTanggalCheckin(), r.getTanggalCheckout(), r.getStatus()});
         }
+        resetPaymentPanel();
     }
 
     private double getHarga(int idKamar) {
@@ -61,31 +178,69 @@ public class FormPembayaran extends JDialog {
         return k != null ? k.getHarga() : 0.0;
     }
 
-    private void calculate() {
+    private void selectReservasi() {
         int r = table.getSelectedRow();
         if (r < 0) {
-            JOptionPane.showMessageDialog(this, "Pilih reservasi terlebih dahulu.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            resetPaymentPanel();
             return;
         }
-        int id = Integer.parseInt(model.getValueAt(r,0).toString());
-        double total = pembayaranService.calculateTotal(id);
-        JOptionPane.showMessageDialog(this, "Total bayar: Rp " + String.format("%,.2f", total));
+        currentReservasiId = Integer.parseInt(model.getValueAt(r, 0).toString());
+        currentTotal = pembayaranService.calculateTotal(currentReservasiId);
+        lblTotalBayar.setText("Rp " + String.format("%,.0f", currentTotal));
+        btnPay.setEnabled(true);
+        
+        // Auto-focus the payment input field
+        txtDibayar.setText("");
+        txtDibayar.requestFocus();
+    }
+
+    private void calculateKembalian() {
+        if (currentTotal == 0) return;
+        try {
+            String dibayarStr = txtDibayar.getText().replace(",", "").replace(".", "").trim();
+            if (dibayarStr.isEmpty()) {
+                lblKembalian.setText("Rp 0");
+                return;
+            }
+            double dibayar = Double.parseDouble(dibayarStr);
+            double kembalian = dibayar - currentTotal;
+            if (kembalian < 0) kembalian = 0;
+            lblKembalian.setText("Rp " + String.format("%,.0f", kembalian));
+        } catch (NumberFormatException ignored) {
+            lblKembalian.setText("Rp 0");
+        }
+    }
+
+    private void resetPaymentPanel() {
+        currentReservasiId = -1;
+        currentTotal = 0;
+        lblTotalBayar.setText("Rp 0");
+        txtDibayar.setText("");
+        lblKembalian.setText("Rp 0");
+        btnPay.setEnabled(false);
     }
 
     private void pay() {
-        int r = table.getSelectedRow();
-        if (r < 0) {
-            JOptionPane.showMessageDialog(this, "Pilih reservasi terlebih dahulu.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        if (currentReservasiId == -1) return;
+        
+        try {
+            String dibayarStr = txtDibayar.getText().replace(",", "").replace(".", "").trim();
+            double dibayar = Double.parseDouble(dibayarStr);
+            if (dibayar < currentTotal) {
+                JOptionPane.showMessageDialog(this, "Uang pembayaran kurang!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Masukkan angka nominal pembayaran yang valid.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int id = Integer.parseInt(model.getValueAt(r,0).toString());
-        // ensure status is CHECK_IN or DIPESAN? allow payment for any
-        boolean ok = pembayaranService.pay(id);
+
+        boolean ok = pembayaranService.pay(currentReservasiId);
         if (ok) {
-            JOptionPane.showMessageDialog(this, "Pembayaran berhasil disimpan.");
+            JOptionPane.showMessageDialog(this, "Pembayaran berhasil disimpan.\nStruk akan dicetak.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
             loadTable();
         } else {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan pembayaran.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan pembayaran atau pembayaran sudah dilakukan sebelumnya.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
