@@ -101,8 +101,15 @@ public class FormLaporan extends JDialog {
         add(tabbedPane, BorderLayout.CENTER);
 
         // Bottom Panel
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         bottom.setBackground(Color.decode("#F9FAFB"));
+        
+        JButton btnExport = new JButton("Export ke Excel (CSV)");
+        btnExport.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnExport.setBackground(Color.decode("#2563EB")); // Blue
+        btnExport.setForeground(Color.WHITE);
+        btnExport.putClientProperty("JButton.buttonType", "roundRect");
+        btnExport.addActionListener(e -> exportData());
         
         JButton btnTotalPendapatan = new JButton("Hitung Total Pendapatan");
         btnTotalPendapatan.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -111,6 +118,7 @@ public class FormLaporan extends JDialog {
         btnTotalPendapatan.putClientProperty("JButton.buttonType", "roundRect");
         btnTotalPendapatan.addActionListener(e -> showTotalPendapatan());
         
+        bottom.add(btnExport);
         bottom.add(btnTotalPendapatan);
         add(bottom, BorderLayout.SOUTH);
     }
@@ -156,8 +164,11 @@ public class FormLaporan extends JDialog {
                 modelReservasi.addRow(new Object[]{r.getIdReservasi(), r.getIdTamu(), r.getIdKamar(), r.getTanggalCheckin(), r.getTanggalCheckout(), r.getStatus()});
             }
             
-            // To filter pembayaran by date we would need a method in PembayaranDAO, 
-            // assuming it's not strictly required in the user's prompt or we only filter reservations here.
+            modelPembayaran.setRowCount(0);
+            List<model.Pembayaran> plist = pembayaranDAO.findByDateRange(start, end);
+            for (model.Pembayaran p : plist) {
+                modelPembayaran.addRow(new Object[]{p.getIdPembayaran(), p.getIdReservasi(), p.getLamaMenginap(), "Rp " + String.format("%,.0f", p.getTotalBayar()), p.getTanggalBayar()});
+            }
             
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Format tanggal salah. Gunakan yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -167,5 +178,26 @@ public class FormLaporan extends JDialog {
     private void showTotalPendapatan() {
         double total = pembayaranDAO.totalPendapatan();
         JOptionPane.showMessageDialog(this, "Total pendapatan dari semua transaksi:\nRp " + String.format("%,.0f", total), "Total Pendapatan", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void exportData() {
+        JTabbedPane tab = (JTabbedPane) ((BorderLayout)getContentPane().getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        int idx = tab.getSelectedIndex();
+        JTable targetTable = (idx == 0) ? tableReservasi : tablePembayaran;
+        String defaultName = (idx == 0) ? "Laporan_Reservasi.csv" : "Laporan_Pembayaran.csv";
+        
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Simpan sebagai Excel (CSV)");
+        fileChooser.setSelectedFile(new java.io.File(defaultName));
+        int userSelection = fileChooser.showSaveDialog(this);
+        
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            java.io.File fileToSave = fileChooser.getSelectedFile();
+            if (utils.CSVExporter.exportTableToCSV(targetTable, fileToSave.getAbsolutePath())) {
+                JOptionPane.showMessageDialog(this, "Berhasil diekspor ke: " + fileToSave.getAbsolutePath(), "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Gagal mengekspor data.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

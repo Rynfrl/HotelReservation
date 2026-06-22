@@ -175,7 +175,7 @@ public class FormUser extends JDialog {
         }
         User u = new User();
         u.setUsername(username);
-        u.setPassword(password);
+        u.setPassword(utils.PasswordUtil.hashSHA256(password));
         u.setRole(role);
         if (userDAO.save(u)) {
             loadTable();
@@ -203,7 +203,7 @@ public class FormUser extends JDialog {
         if (u == null) return;
         
         u.setUsername(username);
-        if (!password.isEmpty()) u.setPassword(password);
+        if (!password.isEmpty()) u.setPassword(utils.PasswordUtil.hashSHA256(password));
         u.setRole(role);
         
         if (userDAO.update(u)) {

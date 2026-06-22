@@ -222,10 +222,10 @@ public class FormPembayaran extends JDialog {
 
     private void pay() {
         if (currentReservasiId == -1) return;
-        
+        double dibayar = 0;
         try {
             String dibayarStr = txtDibayar.getText().replace(",", "").replace(".", "").trim();
-            double dibayar = Double.parseDouble(dibayarStr);
+            dibayar = Double.parseDouble(dibayarStr);
             if (dibayar < currentTotal) {
                 JOptionPane.showMessageDialog(this, "Uang pembayaran kurang!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -237,7 +237,21 @@ public class FormPembayaran extends JDialog {
 
         boolean ok = pembayaranService.pay(currentReservasiId);
         if (ok) {
-            JOptionPane.showMessageDialog(this, "Pembayaran berhasil disimpan.\nStruk akan dicetak.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            model.Pembayaran p = pembayaranService.getPembayaran(currentReservasiId);
+            Reservasi r = reservasiDAO.findById(currentReservasiId);
+            Kamar k = new dao.KamarDAO().findById(r.getIdKamar());
+            model.Tamu t = new dao.TamuDAO().findById(r.getIdTamu());
+            
+            double kembalian = dibayar - currentTotal;
+            if (kembalian < 0) kembalian = 0;
+            
+            String receiptPath = utils.ReceiptGenerator.generateReceipt(p, r, k, t, dibayar, kembalian);
+            
+            if (receiptPath != null) {
+                JOptionPane.showMessageDialog(this, "Pembayaran berhasil disimpan.\nStruk telah dicetak di:\n" + receiptPath, "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Pembayaran berhasil disimpan tetapi struk gagal dicetak.", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
             loadTable();
         } else {
             JOptionPane.showMessageDialog(this, "Gagal menyimpan pembayaran atau pembayaran sudah dilakukan sebelumnya.", "Error", JOptionPane.ERROR_MESSAGE);

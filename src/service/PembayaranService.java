@@ -46,4 +46,8 @@ public class PembayaranService {
     public double totalPendapatan() {
         return pembayaranDAO.totalPendapatan();
     }
+
+    public Pembayaran getPembayaran(int idReservasi) {
+        return pembayaranDAO.findByReservasiId(idReservasi);
+    }
 }

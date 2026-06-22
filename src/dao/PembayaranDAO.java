@@ -57,4 +57,67 @@ public class PembayaranDAO {
         }
         return 0.0;
     }
+
+    public Pembayaran findByReservasiId(int idReservasi) {
+        String sql = "SELECT * FROM pembayaran WHERE id_reservasi=? ORDER BY id_pembayaran DESC LIMIT 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idReservasi);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Pembayaran p = new Pembayaran();
+                p.setIdPembayaran(rs.getInt("id_pembayaran"));
+                p.setIdReservasi(rs.getInt("id_reservasi"));
+                p.setLamaMenginap(rs.getInt("lama_menginap"));
+                p.setTotalBayar(rs.getDouble("total_bayar"));
+                p.setTanggalBayar(rs.getTimestamp("tanggal_bayar").toLocalDateTime());
+                return p;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Pembayaran> findByDateRange(Date start, Date end) {
+        List<Pembayaran> list = new ArrayList<>();
+        String sql = "SELECT * FROM pembayaran WHERE DATE(tanggal_bayar) BETWEEN ? AND ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, start);
+            ps.setDate(2, end);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Pembayaran p = new Pembayaran();
+                p.setIdPembayaran(rs.getInt("id_pembayaran"));
+                p.setIdReservasi(rs.getInt("id_reservasi"));
+                p.setLamaMenginap(rs.getInt("lama_menginap"));
+                p.setTotalBayar(rs.getDouble("total_bayar"));
+                p.setTanggalBayar(rs.getTimestamp("tanggal_bayar").toLocalDateTime());
+                list.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public double[] getMonthlyRevenue(int year) {
+        double[] months = new double[12];
+        String sql = "SELECT MONTH(tanggal_bayar) as m, SUM(total_bayar) as total FROM pembayaran WHERE YEAR(tanggal_bayar) = ? GROUP BY MONTH(tanggal_bayar)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, year);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int m = rs.getInt("m");
+                if (m >= 1 && m <= 12) {
+                    months[m - 1] = rs.getDouble("total");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return months;
+    }
 }

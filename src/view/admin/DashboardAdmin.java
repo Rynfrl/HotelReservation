@@ -21,6 +21,7 @@ public class DashboardAdmin extends JFrame {
     private JLabel lblKamarTerisi = new JLabel("0");
     private JLabel lblTotalReservasi = new JLabel("0");
     private JLabel lblTotalPendapatan = new JLabel("Rp 0");
+    private BarChartPanel barChart;
 
     public DashboardAdmin() {
         setTitle("Dashboard Admin - Hotel Reservation");
@@ -79,14 +80,22 @@ public class DashboardAdmin extends JFrame {
         add(header, BorderLayout.NORTH);
 
         // Content Area
-        JPanel content = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        JPanel content = new JPanel(new BorderLayout(20, 20));
         content.setBackground(Color.decode("#F9FAFB")); // Light Gray background
+        content.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        content.add(createStatCard("Total Pendapatan", lblTotalPendapatan, "#10B981")); // Emerald Green
-        content.add(createStatCard("Total Kamar", lblTotalKamar, "#3B82F6")); // Blue
-        content.add(createStatCard("Kamar Tersedia", lblKamarTersedia, "#F59E0B")); // Amber
-        content.add(createStatCard("Kamar Terisi", lblKamarTerisi, "#EF4444")); // Red
-        content.add(createStatCard("Total Reservasi", lblTotalReservasi, "#8B5CF6")); // Purple
+        JPanel cardsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        cardsPanel.setBackground(Color.decode("#F9FAFB"));
+        cardsPanel.add(createStatCard("Total Pendapatan", lblTotalPendapatan, "#10B981")); // Emerald Green
+        cardsPanel.add(createStatCard("Total Kamar", lblTotalKamar, "#3B82F6")); // Blue
+        cardsPanel.add(createStatCard("Kamar Tersedia", lblKamarTersedia, "#F59E0B")); // Amber
+        cardsPanel.add(createStatCard("Kamar Terisi", lblKamarTerisi, "#EF4444")); // Red
+        cardsPanel.add(createStatCard("Total Reservasi", lblTotalReservasi, "#8B5CF6")); // Purple
+        content.add(cardsPanel, BorderLayout.NORTH);
+
+        // Bar Chart
+        barChart = new BarChartPanel(new double[12], new String[]{"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"}, "Pendapatan Bulanan Tahun Ini");
+        content.add(barChart, BorderLayout.CENTER);
 
         add(content, BorderLayout.CENTER);
     }
@@ -147,6 +156,12 @@ public class DashboardAdmin extends JFrame {
         lblKamarTerisi.setText(String.valueOf(terisi));
         lblTotalReservasi.setText(String.valueOf(totalReservasi));
         lblTotalPendapatan.setText("Rp " + String.format("%,.0f", pendapatan));
+        
+        if (barChart != null) {
+            int currentYear = java.time.LocalDate.now().getYear();
+            double[] monthly = new dao.PembayaranDAO().getMonthlyRevenue(currentYear);
+            barChart.setValues(monthly);
+        }
     }
 
     private void openFormKamar() {

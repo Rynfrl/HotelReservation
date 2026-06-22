@@ -1,0 +1,24 @@
+==============================================
+            HOTEL RESERVATION SYSTEM          
+               STRUK PEMBAYARAN               
+==============================================
+ID Pembayaran : TRX-4
+Tanggal Bayar : 22-06-2026 08:39:43
+----------------------------------------------
+Data Tamu:
+Nama          : Siti Aminah
+No HP         : 082345678901
+----------------------------------------------
+Data Menginap:
+Kamar         : 103 (Suite)
+Check-In      : 2026-06-21
+Check-Out     : 2026-06-24
+Lama Menginap : 3 malam
+Harga / Malam : Rp 750.000,00
+----------------------------------------------
+TOTAL TAGIHAN : Rp 2.250.000,00
+DIBAYAR       : Rp 2.250.000,00
+KEMBALIAN     : Rp 0,00
+==============================================
+        Terima Kasih Atas Kunjungan Anda      
+==============================================

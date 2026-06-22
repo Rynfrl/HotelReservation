@@ -169,6 +169,10 @@ public class FormTamu extends JDialog {
             JOptionPane.showMessageDialog(this, "Semua field wajib diisi.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        if (!no.matches("\\d+")) {
+            JOptionPane.showMessageDialog(this, "Nomor HP harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         Tamu t = new Tamu();
         t.setNama(nama);
         t.setNoHp(no);
@@ -192,6 +196,10 @@ public class FormTamu extends JDialog {
         String alamat = txtAlamat.getText().trim();
         if (nama.isEmpty() || no.isEmpty() || alamat.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Semua field wajib diisi.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (!no.matches("\\d+")) {
+            JOptionPane.showMessageDialog(this, "Nomor HP harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         Tamu t = tamuDAO.findById(id);
