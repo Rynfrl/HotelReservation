@@ -18,6 +18,12 @@ Aplikasi ini dibagi menjadi dua modul hak akses utama:
 - **Proses Check-In & Check-Out**: Sistem yang dirancang untuk dapat dioperasikan dengan meminimalisir jumlah klik.
 - **Sistem Pembayaran Cerdas**: Fitur kalkulasi otomatis. Kembalian akan dihitung secara *real-time* saat kasir sedang mengetikkan nominal uang yang dibayar.
 
+### 🏢 Fitur Skala Enterprise (Keamanan & Analitik)
+- **Keamanan Kriptografi (SHA-256)**: Kata sandi pengguna tidak lagi disimpan dalam wujud teks murni, melainkan diacak menggunakan algoritma *hashing* satu arah standar industri, lengkap dengan fitur *auto-migrate* sandi lama.
+- **Visualisasi Data Interaktif**: Tersedia diagram batang (*Bar Chart*) *native* pada halaman Admin yang menampilkan grafik tren pendapatan bulanan tanpa bantuan *library* tambahan.
+- **Ekspor Laporan Otomatis**: Seluruh laporan (Reservasi maupun Keuangan) dapat dengan mudah diekspor menjadi format file **.csv** yang kompatibel penuh dengan **Microsoft Excel**.
+- **Pencetak Struk Kasir**: Sistem akan merancang dan menyetak bukti pembayaran/struk secara otomatis ke format file lokal setiap kali pembayaran selesai, lengkap dengan rekaman nama Kasir yang bertugas.
+
 ## 🛠️ Teknologi yang Digunakan
 
 - **Bahasa Pemrograman**: Java (JDK 8 / 21+)

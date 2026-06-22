@@ -55,10 +55,17 @@ classDiagram
         +findAll() List~Reservasi~
         +updateStatus(int, String) boolean
     }
+    class PembayaranDAO {
+        +save(Pembayaran) boolean
+        +findAll() List~Pembayaran~
+        +findByDateRange(Date, Date) List~Pembayaran~
+        +getMonthlyRevenue(int) double[]
+    }
 
     UserDAO ..> User
     KamarDAO ..> Kamar
     ReservasiDAO ..> Reservasi
+    PembayaranDAO ..> Pembayaran
 
     %% Service Layer
     class LoginService {
@@ -77,3 +84,24 @@ classDiagram
     LoginService --> UserDAO
     ReservasiService --> ReservasiDAO
     ReservasiService --> KamarDAO
+    PembayaranService --> PembayaranDAO
+
+    %% Utility Layer
+    class PasswordUtil {
+        <<Utility>>
+        +hashSHA256(String) String$
+    }
+    class CSVExporter {
+        <<Utility>>
+        +exportTableToCSV(JTable, String) boolean$
+    }
+    class ReceiptGenerator {
+        <<Utility>>
+        +generateReceipt(...) String$
+    }
+    
+    %% View Layer (Partial)
+    class BarChartPanel {
+        <<UI Component>>
+        +setValues(double[])
+    }
