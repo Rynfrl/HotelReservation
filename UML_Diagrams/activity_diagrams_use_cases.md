@@ -128,21 +128,24 @@ Penyewaan kamar baru di `FormReservasi.java` dan divalidasi oleh `ReservasiServi
 stateDiagram-v2
     [*] --> BukaFormReservasi
     BukaFormReservasi --> InputDataReservasi : Pilih Tamu, Kamar, Tgl Check-in & Check-out
-    InputDataReservasi --> ProsesReservasi : Klik "Simpan Reservasi"
+    InputDataReservasi --> ValidasiTanggal : Klik "Simpan Reservasi"
     
-    ProsesReservasi --> ValidasiKamar : Cek status kamar di DB
+    state isTanggalValid <<choice>>
+    ValidasiTanggal --> isTanggalValid
     
+    isTanggalValid --> ValidasiKamarDB : [Check-Out > Check-In]
+    isTanggalValid --> BukaFormReservasi : [Tanggal Salah / Invalid]
+    
+    ValidasiKamarDB : Cek status kamar di DB
     state isTersedia <<choice>>
-    ValidasiKamar --> isTersedia
+    ValidasiKamarDB --> isTersedia
     
     isTersedia --> SimpanReservasiDB : [Kamar == TERSEDIA]
-    isTersedia --> GagalkanReservasi : [Kamar != TERSEDIA]
+    isTersedia --> BukaFormReservasi : [Kamar != TERSEDIA]
     
     SimpanReservasiDB --> UpdateStatusKamar : Kamar di-set "DIPESAN"
     UpdateStatusKamar --> SuksesReservasi : Notifikasi berhasil
     SuksesReservasi --> [*]
-    
-    GagalkanReservasi --> [*] : Notifikasi Error
 ```
 
 ### UC7: Proses Check-In

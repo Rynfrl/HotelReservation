@@ -5,29 +5,35 @@ stateDiagram-v2
     InputDataTamu --> PilihKamar
     
     PilihKamar : 2. Kasir Memilih Kamar & Tgl Menginap
-    PilihKamar --> ValidasiKamar
+    PilihKamar --> ValidasiTanggal
     
-    ValidasiKamar : 3. Sistem Validasi Kamar (createReservasi)
+    ValidasiTanggal : 3. Sistem Validasi Tanggal
+    state is_tanggal_valid <<choice>>
+    ValidasiTanggal --> is_tanggal_valid
+    
+    is_tanggal_valid --> ValidasiKamar : [Check-Out > Check-In]
+    is_tanggal_valid --> PilihKamar : [Tanggal Invalid]
+    
+    ValidasiKamar : 4. Sistem Validasi Kamar (createReservasi)
     state is_kamar_tersedia <<choice>>
     ValidasiKamar --> is_kamar_tersedia
     
     is_kamar_tersedia --> SimpanReservasi : [Status == TERSEDIA]
     is_kamar_tersedia --> PilihKamar : [Status != TERSEDIA]
     
-    SimpanReservasi : 4. Sistem Menyimpan Data Reservasi
+    SimpanReservasi : 5. Sistem Menyimpan Data Reservasi
     
     state is_checkin <<choice>>
     SimpanReservasi --> is_checkin : Waktu Check-In?
-    
     is_checkin --> ProsesCheckIn : Sudah Tiba
     is_checkin --> Menunggu : Belum
     Menunggu --> is_checkin
     
-    ProsesCheckIn : 5. Kasir Mengeksekusi Check-In
+    ProsesCheckIn : 6. Kasir Mengeksekusi Check-In
     ProsesCheckIn --> ProsesCheckOut : Tamu Selesai Menginap
     
-    ProsesCheckOut : 6. Kasir Melakukan Check-Out
+    ProsesCheckOut : 7. Kasir Melakukan Check-Out
     ProsesCheckOut --> Pembayaran
     
-    Pembayaran : 7. Kasir Menghitung & Menerima Pembayaran
+    Pembayaran : 8. Kasir Menghitung & Menerima Pembayaran
     Pembayaran --> [*]
