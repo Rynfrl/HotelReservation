@@ -1,0 +1,26 @@
+==============================================
+            HOTEL RESERVATION SYSTEM          
+               STRUK PEMBAYARAN               
+==============================================
+ID Pembayaran : TRX-5
+Tanggal Bayar : 23-06-2026 13:18:48
+----------------------------------------------
+Data Tamu:
+Nama          : Budi Santoso
+No HP         : 081234567890
+----------------------------------------------
+Data Menginap:
+Kamar         : 101 (Single)
+Check-In      : 2026-06-21
+Check-Out     : 2026-06-22
+Lama Menginap : 1 malam
+Harga / Malam : Rp 200.000,00
+----------------------------------------------
+TOTAL TAGIHAN : Rp 200.000,00
+DIBAYAR       : Rp 200.000,00
+KEMBALIAN     : Rp 0,00
+==============================================
+Kasir yang Melayani: kasir
+==============================================
+        Terima Kasih Atas Kunjungan Anda      
+==============================================
