@@ -1,38 +1,62 @@
 classDiagram
     %% Model Layer
     class User {
-        +int idUser
-        +String username
-        +String password
-        +String role
+        -int idUser
+        -String username
+        -String password
+        -String role
+        +getIdUser() int
+        +getUsername() String
+        +getPassword() String
+        +getRole() String
     }
     class Kamar {
-        +int idKamar
-        +String nomorKamar
-        +String tipeKamar
-        +double harga
-        +String status
+        -int idKamar
+        -String nomorKamar
+        -String tipeKamar
+        -double harga
+        -String status
+        +getIdKamar() int
+        +getNomorKamar() String
+        +getTipeKamar() String
+        +getHarga() double
+        +getStatus() String
     }
     class Tamu {
-        +int idTamu
-        +String nama
-        +String noHp
-        +String alamat
+        -int idTamu
+        -String nama
+        -String noHp
+        -String alamat
+        +getIdTamu() int
+        +getNama() String
+        +getNoHp() String
+        +getAlamat() String
     }
     class Reservasi {
-        +int idReservasi
-        +int idTamu
-        +int idKamar
-        +LocalDate tanggalCheckin
-        +LocalDate tanggalCheckout
-        +String status
+        -int idReservasi
+        -int idTamu
+        -int idKamar
+        -LocalDate tanggalCheckin
+        -LocalDate tanggalCheckout
+        -String status
+        +getIdReservasi() int
+        +getIdTamu() int
+        +getIdKamar() int
+        +getTanggalCheckin() LocalDate
+        +getTanggalCheckout() LocalDate
+        +getStatus() String
     }
     class Pembayaran {
-        +int idPembayaran
-        +int idReservasi
-        +int lamaMenginap
-        +double totalBayar
-        +LocalDateTime tanggalBayar
+        -int idPembayaran
+        -int idReservasi
+        -int lamaMenginap
+        -double totalBayar
+        -LocalDateTime tanggalBayar
+        +getIdPembayaran() int
+        +getIdReservasi() int
+        +getLamaMenginap() int
+        +getTotalBayar() double
+        +getTanggalBayar() LocalDateTime
     }
 
     Reservasi "*" --> "1" Tamu : dimiliki
@@ -43,16 +67,25 @@ classDiagram
     class UserDAO {
         +findByUsername(String) User
         +findAll() List~User~
+        +save(User) boolean
+        +update(User) boolean
+        +delete(int) boolean
     }
     class KamarDAO {
         +findById(int) Kamar
         +findAll() List~Kamar~
-        +findAvailable() List~Kamar~
+        +countAll() int
+        +countByStatus(String) int
+        +save(Kamar) boolean
         +update(Kamar) boolean
+        +delete(int) boolean
     }
     class ReservasiDAO {
         +findById(int) Reservasi
         +findAll() List~Reservasi~
+        +countAll() int
+        +findByDateRange(Date, Date) List~Reservasi~
+        +save(Reservasi) boolean
         +updateStatus(int, String) boolean
     }
     class PembayaranDAO {
@@ -75,10 +108,12 @@ classDiagram
         +createReservasi(Reservasi) boolean
         +checkIn(int id) boolean
         +checkOut(int id) boolean
+        +listAll() List~Reservasi~
     }
     class PembayaranService {
         +calculateTotal(int id) double
-        +pay(int id) boolean
+        +pay(int id, double dibayar) boolean
+        +totalPendapatan() double
     }
 
     LoginService --> UserDAO
@@ -89,19 +124,23 @@ classDiagram
     %% Utility Layer
     class PasswordUtil {
         <<Utility>>
-        +hashSHA256(String) String$
+        +hashSHA256(String)$ String
     }
     class CSVExporter {
         <<Utility>>
-        +exportTableToCSV(JTable, String) boolean$
+        +exportTableToCSV(JTable, String)$ boolean
     }
     class ReceiptGenerator {
         <<Utility>>
-        +generateReceipt(...) String$
+        +generateReceipt(int)$ String
     }
     
     %% View Layer (Partial)
     class BarChartPanel {
         <<UI Component>>
+        -double[] values
+        -String[] labels
+        -String title
         +setValues(double[])
+        #paintComponent(Graphics)
     }
